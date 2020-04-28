@@ -21,21 +21,16 @@ module.exports = {
     checkNewStreams: async () => {
         try {
             let streamers = await utils.query(module.exports.db, "select user_id, account_id from social_networks where account_type = 'twitch'");
-            
-            let twitch_requests = 0;
+
             for (const streamer of streamers) {
-                if (twitch_requests >= 29) {
-                    await utils.sleep(1000)
-                    twitch_requests = 0
-                }
                 let accId = streamer.account_id;
-                let twitchResult = module.exports.checkTwitchStream(accId);
+                let twitchResult = await module.exports.checkTwitchStream(accId);
                 if (twitchResult.length < 1) continue; // skip useless user
 
                 // user stream exist!
                 let streamExists = await utils.query(module.exports.db, `select * from twitch_streams where streamer = ?`, accId);
-                if (streamExists) continue; // skip he exist
-                
+                if (streamExists.length > 0) continue; // skip he exist
+
                 let isUserOnline = await module.exports.checkUserIdOnline(streamer.user_id);
                 if (!isUserOnline) continue; // skip he is offline on kurikku)
 
@@ -46,7 +41,6 @@ module.exports = {
                     streamer.user_id, accId, twitchResult[0]['title'], twitchResult[0]['viewer_count'] 
                 )
                 console.log(`[Twitch Check] User ${streamer.user_id} has turned on stream with ${twitchResult[0]['viewer_count']} viewers!`)
-                twitch_requests++
             }
         } catch (e) {
             console.log(e)
@@ -55,28 +49,23 @@ module.exports = {
     checkExistsStreams: async () => {
         try {
             let streams = await utils.query(module.exports.db, "select * from twitch_streams");
-            
-            let twitch_requests = 0;
+
             for (const stream of streams) {
-                if (twitch_requests >= 29) {
-                    await utils.sleep(1000)
-                    twitch_requests = 0
-                }
                 let twitchStream = await module.exports.checkTwitchStream(stream.streamer);
                 let isUserOnline = await module.exports.checkUserIdOnline(stream.user_id);
                 if (twitchStream.length < 1 || !isUserOnline) {
                     // we need to delete this stream, user now is offline on twitch or in kurikku
                     await utils.query(module.exports.db, "delete from twitch_streams where id = ?", stream.id)
                     console.log(`[Twitch Check] User ${stream.user_id} has stoped him stream!`)
+                    continue;
                 }
 
                 // user online! let update values
                 await utils.query(
-                    module.expors.db,
+                    module.exports.db,
                     "update twitch_streams set name = ?, viewer_count = ? where id = ?",
                     twitchStream[0]['title'], twitchStream[0]['viewer_count'], stream.id
                 )
-                twitch_requests++
             }
         } catch (e) {
             console.log(e);
@@ -89,8 +78,8 @@ module.exports = {
                     id: user_id
                 }
             })
-            return result.result
-        } 
+            return result.data.result
+        }
         catch (e) {
             console.log(`[Twitch Check] user ${user_id} can't be checked isOnline`)
             return false;
@@ -103,11 +92,12 @@ module.exports = {
                     user_login: user
                 },
                 headers: {
-                    "Client-ID": configPrivate["twitch-client-id"]
+                    "Authorization": "Bearer "+configPrivate["twtich-bearer-token"]
                 }
             })
-            return result.data
+            return result.data.data
         } catch (e) {
+            await utils.sleep(5000)
             console.log(e)
             return []
         }
