@@ -21,8 +21,13 @@ module.exports = {
     checkNewStreams: async () => {
         try {
             let streamers = await utils.query(module.exports.db, "select user_id, account_id from social_networks where account_type = 'twitch'");
-
+            
+            let twitch_requests = 0;
             for (const streamer of streamers) {
+                if (twitch_requests >= 29) {
+                    await utils.sleep(1000)
+                    twitch_requests = 0
+                }
                 let accId = streamer.account_id;
                 let twitchResult = module.exports.checkTwitchStream(accId);
                 if (twitchResult.length < 1) continue; // skip useless user
@@ -41,6 +46,7 @@ module.exports = {
                     streamer.user_id, accId, twitchResult[0]['title'], twitchResult[0]['viewer_count'] 
                 )
                 console.log(`[Twitch Check] User ${streamer.user_id} has turned on stream with ${twitchResult[0]['viewer_count']} viewers!`)
+                twitch_requests++
             }
         } catch (e) {
             console.log(e)
@@ -50,7 +56,12 @@ module.exports = {
         try {
             let streams = await utils.query(module.exports.db, "select * from twitch_streams");
             
+            let twitch_requests = 0;
             for (const stream of streams) {
+                if (twitch_requests >= 29) {
+                    await utils.sleep(1000)
+                    twitch_requests = 0
+                }
                 let twitchStream = await module.exports.checkTwitchStream(stream.streamer);
                 let isUserOnline = await module.exports.checkUserIdOnline(stream.user_id);
                 if (twitchStream.length < 1 || !isUserOnline) {
@@ -65,6 +76,7 @@ module.exports = {
                     "update twitch_streams set name = ?, viewer_count = ? where id = ?",
                     twitchStream[0]['title'], twitchStream[0]['viewer_count'], stream.id
                 )
+                twitch_requests++
             }
         } catch (e) {
             console.log(e);
