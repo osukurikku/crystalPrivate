@@ -1,11 +1,14 @@
 const axios = require("axios");
 const utils = require("../../utils");
+const Discord = require("discord.js");
 const configPrivate = require("../config.json");
 
 module.exports = {
     db: null,
-    init: async (db) => {
-        module.exports.db = db
+    client: null,
+    init: async (clientObject) => {
+        module.exports.db = clientObject.config.SQL
+        module.exports.client = clientObject
         console.log("[Twitch Check] checking is online!")
 
         while (true) {
@@ -41,6 +44,17 @@ module.exports = {
                     streamer.user_id, accId, twitchResult[0]['title'], twitchResult[0]['viewer_count'] 
                 )
                 console.log(`[Twitch Check] User ${streamer.user_id} has turned on stream with ${twitchResult[0]['viewer_count']} viewers!`)
+                
+                var embed = new Discord.RichEmbed()
+                    .setTitle(`New stream detected!`)
+                    .setAuthor(streamer.account_id, `https://a.kurikku.pw/${streamer.user_id}`, `https://twitch.tv/${streamer.account_id}`)
+                    .setColor(8521140)
+                    .setDescription(`**${streamer.account_id}** started stream!`)
+                    .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${streamer.account_id}-480x270.jpg`)
+                    .setURL(`https://twitch.tv/${streamer.account_id}`)
+                    .setFooter("osu!Kurikku - twitch bot")
+        
+                module.exports.client.channels.get(configPrivate['twitch-update-chan']).send({embed});
             }
         } catch (e) {
             console.log(e)
