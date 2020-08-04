@@ -106,6 +106,7 @@ module.exports = {
                     user_login: user
                 },
                 headers: {
+		            "Client-ID": configPrivate["twitch-client-id"],
                     "Authorization": "Bearer "+configPrivate["twtich-bearer-token"]
                 }
             })
