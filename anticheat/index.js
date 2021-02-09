@@ -1,5 +1,6 @@
 const {ButtonState} = require("./ReplayFrame");
 const {Replay} = require("./Replay");
+var nj = require('numjs');
 
 let KeyboardTSEnum;
 (function (KeyboardTSEnum) {
@@ -52,21 +53,47 @@ class AntiCheat {
         return sum / count;
     }
 
+    median(values) {
+        if(values.length === 0) return 0;
+
+        values.sort(function(a, b){
+            return a-b;
+        });
+
+        var half = Math.floor(values.length / 2);
+
+        if (values.length % 2)
+            return values[half];
+
+        return (values[half - 1] + values[half]) / 2.0;
+    }
+
+    CalculateAverageFrameTimeDiffV3() {
+        const frames = this.replay.frames;
+        const frames_t = frames.map((x) => x.timeDiff)
+        let mediana = this.median(frames_t);
+
+        return mediana;
+    }
+
     TimewarpDetector() {
         const average = arr => arr.reduce((p, c) => p + c, 0) / arr.length;
         let frameTimeDiff =  average(this.replay.frames.filter(x => x.timeDiff > 0 && x.timeDiff < 30).map((x) => x.timeDiff))
         let frameTimeDiffV2 = this.CalculateAverageFrameTimeDiffV2();
+        let frameTimeDiffV3 = this.CalculateAverageFrameTimeDiffV3();
 
         if ((this.mods & 64) > 0) {
             frameTimeDiff *= (1 / 1.5);
+            frameTimeDiffV2 *= (1 / 1.5);
+            frameTimeDiffV3 *= (1 / 1.5);
         }
         if ((this.mods & 256) > 0) {
             frameTimeDiff *= (1 / 0.75);
+            frameTimeDiffV2 *= (1 / 0.75);
+            frameTimeDiffV3 *= (1 / 0.75);
         }
 
-        console.log(`Frame time V1:${frameTimeDiff}\nFrame time V2:${frameTimeDiffV2}\nHas DT: ${(this.mods & 64) > 0}\nHas HT: ${(this.mods & 256) > 0}`);
-
-        return [frameTimeDiff, frameTimeDiffV2];
+        return [frameTimeDiff, frameTimeDiffV2, frameTimeDiffV3];
     }
 
     CalculateTaikoAVGPresses() {

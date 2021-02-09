@@ -2,6 +2,7 @@ const configPrivate = require("../config.json");
 const utils = require("../../utils");
 const {RichEmbed} = require("discord.js");
 const {AntiCheat} = require("./index");
+const fs = require("fs");
 /*
  {\"gm\": 0,
  \"user\":
@@ -41,12 +42,13 @@ module.exports = {
             case 0:
                 // STD LOGIC
                 let diffv1v2 = ACInstance.TimewarpDetector();
-                if (diffv1v2[0] < 12.73 || diffv1v2[1] < 12.73) {
+                if (diffv1v2[2] < 13) {
                     embed.setDescription("Prob timewarped chmo.")
+                    need_to_send = true;
                 }
                 embed.addField("CV Frametime v1(includes dt/ht)", diffv1v2[0].toString(), true)
                 embed.addField("CV Frametime v2", diffv1v2[1].toString(), true);
-                need_to_send = true;
+                embed.addField("CV Frametime v3(circleguard edition)", diffv1v2[2].toString(), true);
                 break;
             case 1:
                 let alert_data = ACInstance.TaikoLowPressesDetector();
@@ -54,13 +56,13 @@ module.exports = {
                     embed.setDescription("Dolboeb was found on taiko gamemode with low keypresses")
                     for (const keyInfo of alert_data[1]) {
                         embed.addField(
-                            alert_data[1][0],
-                            `${alert_data[1][1].toFixed(2)}ms`,
+                            keyInfo[0],
+                            `${keyInfo[1].toFixed(2)}ms`,
                             true
                         )
                     }
+                    need_to_send = alert_data[0];
                 }
-                need_to_send = alert_data[0];
                 break;
         }
 
