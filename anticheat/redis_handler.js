@@ -1,6 +1,6 @@
 const configPrivate = require("../config.json");
 const utils = require("../../utils");
-const {RichEmbed} = require("discord.js");
+const {MessageEmbed} = require("discord.js");
 const {AntiCheat} = require("./index");
 const fs = require("fs");
 /*
@@ -32,7 +32,7 @@ module.exports = {
             return;
         }
 
-        let embed = new RichEmbed()
+        let embed = new MessageEmbed()
             .setAuthor(`${message_json.user.username}`, `https://a.kurikku.pw/${message_json.user.userID}`, `https://kurikku.pw/u/${message_json.user.userID}`)
             .setColor(0xffee58)
             .setFooter('osu!Kurikku • today at '+utils.getDateTime())
@@ -50,7 +50,7 @@ module.exports = {
                 embed.addField("CV Frametime v2", diffv1v2[1].toString(), true);
                 embed.addField("CV Frametime v3(circleguard edition)", diffv1v2[2].toString(), true);
                 break;
-            case 1:
+/*            case 1:
                 let alert_data = ACInstance.TaikoLowPressesDetector();
                 if (alert_data[0]) {
                     embed.setDescription("Dolboeb was found on taiko gamemode with low keypresses")
@@ -63,12 +63,12 @@ module.exports = {
                     }
                     need_to_send = alert_data[0];
                 }
-                break;
+                break;*/
         }
 
         embed.addField(`ScoreID`, `${message_json['score']['scoreID']}`, true)
         if (need_to_send) {
-            dsc.channels.get(configPrivate['oopsie-poster-chan']).send(embed);
+            dsc.channels.cache.get(configPrivate['oopsie-poster-chan']).send(embed);
         }
     }
 }

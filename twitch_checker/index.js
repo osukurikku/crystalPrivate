@@ -45,7 +45,7 @@ module.exports = {
                 )
                 console.log(`[Twitch Check] User ${streamer.user_id} has turned on stream with ${twitchResult[0]['viewer_count']} viewers!`)
                 
-                var embed = new Discord.RichEmbed()
+                var embed = new Discord.MessageEmbed()
                     .setTitle(`New stream detected!`)
                     .setAuthor(streamer.account_id, `https://a.kurikku.pw/${streamer.user_id}`, `https://twitch.tv/${streamer.account_id}`)
                     .setColor(8521140)
@@ -54,7 +54,7 @@ module.exports = {
                     .setURL(`https://twitch.tv/${streamer.account_id}`)
                     .setFooter("osu!Kurikku - twitch bot")
         
-                module.exports.client.channels.get(configPrivate['twitch-update-chan']).send({embed});
+                module.exports.client.channels.cache.get(configPrivate['twitch-update-chan']).send({embed});
             }
         } catch (e) {
             console.log(e)

@@ -1,6 +1,6 @@
 const {ButtonState} = require("./ReplayFrame");
 const {Replay} = require("./Replay");
-var nj = require('numjs');
+//var nj = require('numjs');
 
 let KeyboardTSEnum;
 (function (KeyboardTSEnum) {
@@ -157,14 +157,12 @@ class AntiCheat {
             }
         }
 
-        if (alert) {
             for (const key of Object.keys(presses)) {
                 let kpt = presses[key];
                 let sum = kpt.reduce((a, b) => a + b, 0)
                 let length = kpt.length;
-                alertValues.push([KeyboardTSEnum[key], sum / length])
+                alertValues.push([KeyboardTSEnum[key], sum / length, length])
             }
-        }
 
         return [alert, alertValues]
     }
