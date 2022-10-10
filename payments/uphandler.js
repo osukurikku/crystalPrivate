@@ -4,8 +4,8 @@ const Discord = require("discord.js");
 const crypto = require("crypto");
 const UnitPay = require("unitpay-api").default;
 
-const SECRET_KEY = '6242e1194f8688db5a557783a1f687f4';
-const PUBLIC_KEY = '424277-7caa0';
+const SECRET_KEY = '';
+const PUBLIC_KEY = '';
 
 const payment = new UnitPay({
     secretKey: SECRET_KEY
